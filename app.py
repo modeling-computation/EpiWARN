@@ -385,8 +385,9 @@ def render_analysis_report(result):
     <style>
         .period-card-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: 1fr;
             gap: 20px;
+            width: 50%;
             margin: 14px 0 30px 0;
         }
         .period-card {
@@ -462,6 +463,7 @@ def render_analysis_report(result):
         @media (max-width: 900px) {
             .period-card-grid {
                 grid-template-columns: 1fr;
+                width: 100%;
             }
         }
     </style>
@@ -470,17 +472,9 @@ def render_analysis_report(result):
     st.markdown(f"""
     <div class="period-card-grid">
         <div class="period-card">
-            <div class="period-card-title">Analysis Period</div>
+            <div class="period-card-title">Uploaded Data Period</div>
             <div class="period-card-main">{analysis_period_text}</div>
-            <div class="period-card-label">Retrospective range</div>
-            <div class="period-card-detail">The full available period is used to learn a stable signal pattern.</div>
-        </div>
-        <div class="period-card">
-            <div class="period-card-title">Window Calibration</div>
-            <div class="period-card-main">{best_window} Weeks</div>
-            <div class="period-card-label">Selected window size</div>
-            <div class="period-card-detail">{season_count_text}</div>
-            <div class="period-card-note">{warmup_text}</div>
+            <div class="period-card-detail">The analysis uses the full uploaded data period shown above.</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -507,11 +501,10 @@ def render_analysis_report(result):
 
     st.markdown("""
     <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-        <span style="font-size: 28px;"><strong>Overall Period Analysis</strong></span><br>
         <span style="font-size: 20px; color: #444; line-height: 1.6;">
             <ul style="margin-top: 10px;">
-                <li>This panel shows the full analysis time series for context.</li>
-                <li>The chart keeps the visual focus on the observed signal pattern across the full period.</li>
+                <li>This plot shows all uploaded data from start to end.</li>
+                <li>You can drag on the plot to zoom in and check a specific time period.</li>
             </ul>
         </span>
     </div>
@@ -527,12 +520,12 @@ def render_analysis_report(result):
 
     st.markdown("""
     <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-        <span style="font-size: 28px;"><strong>Epidemic Warning Simulation</strong></span><br>
         <span style="font-size: 20px; color: #444; line-height: 1.6;">
             <ul style="margin-top: 10px;">
-                <li>The main panel shows the full original time series while detection is estimated from valid seasonal periods.</li>
-                <li>The right axis shows bootstrap warning probability (%), calculated as detected models divided by total bootstrap models.</li>
-                <li>The lower overview shares the same Date axis and highlights non-overlapping Caution, Alert, and Severe ranges over the original case bars.</li>
+                <li>This plot shows the warning result from the full data simulation.</li>
+                <li>The right axis shows the warning probability (%).</li>
+                <li>When the probability is above 0%, 5%, and 10%, the warning level is shown as Caution, Alert, and Severe.</li>
+                <li>The lower plot uses the same Date axis and shows the warning ranges with colors.</li>
             </ul>
         </span>
     </div>
@@ -612,13 +605,12 @@ def render_analysis_report(result):
 
     st.markdown("""
     <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-        <span style="font-size: 28px;"><strong>Retrospective Analysis Results</strong></span><br>
         <span style="font-size: 20px; color: #444; line-height: 1.6;">
             <ul style="margin-top: 10px;">
-                <li>The full available period is used together for model fitting and retrospective signal detection.</li>
-                <li>The sliding-window size is selected by comparing bootstrap warning dates with hockey-stick reference dates from complete seasons only.</li>
-                <li>Incomplete seasons remain visible in the chart, but the leading incomplete season is treated as a warm-up period and hidden from detection markers.</li>
-                <li><strong>Interactive View:</strong> Use the shared Date-axis overview to compare the original case pattern with the simulated warning ranges.</li>
+                <li>Select one or more seasons to check the result for each season.</li>
+                <li>Each season plot shows the case pattern and the first date for each warning level.</li>
+                <li>The cards below the plot show the first Caution, Alert, and Severe dates.</li>
+                <li>If no warning level is found, the date is shown as "-".</li>
             </ul>
         </span>
     </div>
@@ -813,8 +805,9 @@ with tab1:
             <style>
                 .period-card-grid {
                     display: grid;
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    grid-template-columns: 1fr;
                     gap: 20px;
+                    width: 50%;
                     margin: 14px 0 30px 0;
                 }
                 .period-card {
@@ -902,6 +895,7 @@ with tab1:
                 @media (max-width: 900px) {
                     .period-card-grid {
                         grid-template-columns: 1fr;
+                        width: 100%;
                     }
                 }
             </style>
@@ -910,18 +904,10 @@ with tab1:
             st.markdown(f"""
             <div class="period-card-grid">
                 <div class="period-card">
-                    <div class="period-card-title">Analysis Period</div>
+                    <div class="period-card-title">Uploaded Data Period</div>
                     <div class="period-card-main">{analysis_period_text}</div>
-                    <div class="period-card-label">Retrospective range</div>
-                    <div class="period-card-detail">The full available period is used to learn a stable signal pattern.</div>
+                    <div class="period-card-detail">The analysis uses the full uploaded data period shown above.</div>
                 </div>
-	                <div class="period-card">
-	                    <div class="period-card-title">Window Calibration</div>
-	                    <div class="period-card-main">{best_window} Weeks</div>
-	                    <div class="period-card-label">Selected window size</div>
-	                    <div class="period-card-detail">{season_count_text}</div>
-	                    <div class="period-card-note">{warmup_text}</div>
-	                </div>
 	            </div>
 	            """, unsafe_allow_html=True)
 
@@ -951,11 +937,10 @@ with tab1:
 
             st.markdown("""
             <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-	                <span style="font-size: 28px;"><strong>Overall Period Analysis</strong></span><br>
 	                <span style="font-size: 20px; color: #444; line-height: 1.6;">
                     <ul style="margin-top: 10px;">
-                        <li>This panel shows the full analysis time series for context.</li>
-                        <li>The chart keeps the visual focus on the observed signal pattern across the full period.</li>
+                        <li>This plot shows all uploaded data from start to end.</li>
+                        <li>You can drag on the plot to zoom in and check a specific time period.</li>
                     </ul>
                 </span>
             </div>
@@ -972,13 +957,12 @@ with tab1:
 
             st.markdown("""
             <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-	                <span style="font-size: 28px;"><strong>Epidemic Warning Simulation</strong></span><br>
 	                <span style="font-size: 20px; color: #444; line-height: 1.6;">
 	                    <ul style="margin-top: 10px;">
-	                        <li>The main panel shows the full original time series while detection is estimated from valid seasonal periods.</li>
-	                        <li>The right axis shows bootstrap warning probability (%), calculated as detected models divided by total bootstrap models.</li>
-	                        <li><strong style="color: #1F77B4;">Caution / Alert / Severe Dashed Lines</strong>: Mark the first dates when warning probability becomes positive, reaches 5%, and reaches 10% within each season.</li>
-	                        <li>The lower overview shares the same Date axis and highlights non-overlapping Caution, Alert, and Severe ranges over the original case bars.</li>
+	                        <li>This plot shows the warning result from the full data simulation.</li>
+	                        <li>The right axis shows the warning probability (%).</li>
+	                        <li>When the probability is above 0%, 5%, and 10%, the warning level is shown as Caution, Alert, and Severe.</li>
+	                        <li>The lower plot uses the same Date axis and shows the warning ranges with colors.</li>
 	                    </ul>
 	                </span>
             </div>
@@ -1064,13 +1048,12 @@ with tab1:
 
             st.markdown("""
             <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
-	                <span style="font-size: 28px;"><strong>Retrospective Analysis Results</strong></span><br>
 	                <span style="font-size: 20px; color: #444; line-height: 1.6;">
 		                    <ul style="margin-top: 10px;">
-		                        <li>The full available period is used together for model fitting and retrospective signal detection.</li>
-		                        <li>The sliding-window size is selected by comparing bootstrap warning dates with hockey-stick reference dates from complete seasons only.</li>
-		                        <li>Incomplete seasons remain visible in the chart, but the leading incomplete season is treated as a warm-up period and hidden from detection markers.</li>
-		                        <li><strong>Interactive View:</strong> Use the shared Date-axis overview to compare the original case pattern with the simulated warning ranges.</li>
+		                        <li>Select one or more seasons to check the result for each season.</li>
+		                        <li>Each season plot shows the case pattern and the first date for each warning level.</li>
+		                        <li>The cards below the plot show the first Caution, Alert, and Severe dates.</li>
+		                        <li>If no warning level is found, the date is shown as "-".</li>
 		                    </ul>
                 </span>
             </div>
