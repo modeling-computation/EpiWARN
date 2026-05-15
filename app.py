@@ -548,22 +548,15 @@ def render_analysis_report(result):
         }
         selected_season_labels = st.multiselect(
             "Select seasons to display",
-            options=["All"] + list(season_options.keys()),
-            default=["All"],
-            key="season_summary_multiselect",
+            options=list(season_options.keys()),
+            default=[],
+            key="season_summary_multiselect_v3",
         )
-        selected_specific_labels = [
-            label for label in selected_season_labels
-            if label != "All"
+        selected_summary_items = [
+            season_options[label]
+            for label in selected_season_labels
+            if label in season_options
         ]
-        if selected_specific_labels:
-            selected_summary_items = [
-                season_options[label]
-                for label in selected_specific_labels
-                if label in season_options
-            ]
-        else:
-            selected_summary_items = season_summary_items
 
         st.markdown("""
         <style>
@@ -587,6 +580,9 @@ def render_analysis_report(result):
             }
         </style>
         """, unsafe_allow_html=True)
+        if not selected_summary_items:
+            st.info("Select one or more seasons to display.")
+
         for item in selected_summary_items:
             season = item['season']
             st.markdown(
