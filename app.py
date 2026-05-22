@@ -322,22 +322,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<div style="padding: 18px 22px; margin-bottom: 12px; font-size: 18px; line-height: 1.5; color: #000000; background-color: #f0f2f6; border-radius: 10px; border-top: 1px solid #d9d9d9;">
-    <div style="font-size: 22px; font-weight: 800;">[System Description]</div>
-    <div style="font-size: 18px;">
-        This dashboard analyzes seasonal time-series data to detect early warning signals.<br>
-        It helps you:<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;- Identify when seasonal signal activity begins<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;- Track changes in recurring seasonal patterns<br>
+<div style="padding: 20px 24px; margin-bottom: 12px; color: #000000; background-color: #f0f2f6; border-radius: 10px; border-top: 1px solid #d9d9d9;">
+    <div style="font-size: 24px; font-weight: 800; line-height: 1.35;">[Analysis Report]</div>
+    <div style="font-size: 20px; line-height: 1.6; margin-top: 6px;">
+        Upload your data, configure the settings, and run the analysis to view the results.<br>
+        This tab shows early warning signals in seasonal time-series data and helps you check when seasonal activity begins and how patterns change over time.
     </div>
     <br>
-    <div style="font-size: 22px; font-weight: 800;">[Analysis Steps]</div>
-    <div style="font-size: 18px;">
-        Upload Data &rarr; Configure Settings &rarr; Run Analysis &rarr; View Analysis Report<br>
-        Upload your data and click <strong>Run Analysis</strong> to get started.
-    </div>
-    <div style="margin-top: 18px; font-size: 18px; font-style: italic;">
-        For detailed setup instructions, refer to the <strong>'Setup Guide'</strong> tab below
+    <div style="font-size: 24px; font-weight: 800; line-height: 1.35;">[Setup Guide]</div>
+    <div style="font-size: 20px; line-height: 1.6; margin-top: 6px;">
+        If this is your first time using the dashboard, start here.<br>
+        This tab explains what the dashboard is for, how to run the analysis, and how to read the results.
     </div>
 </div>
 """, unsafe_allow_html=True)
