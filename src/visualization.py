@@ -6,6 +6,311 @@ import matplotlib.dates as mdates
 from matplotlib.colors import ListedColormap
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit as st
+
+def build_season_warning_plot(data, season, epi, summary):
+    season_data = data[data['Season'] == int(season)].copy()
+    season_data = season_data.sort_values('Date').reset_index(drop=True)
+
+    fig = go.Figure()
+    if season_data.empty:
+        fig.update_layout(
+            height=240,
+            margin=dict(l=40, r=30, t=20, b=45),
+            plot_bgcolor='white',
+        )
+        return fig
+
+    max_y = season_data[epi].max()
+    fig.add_trace(
+        go.Bar(
+            x=season_data['Date'],
+            y=season_data[epi],
+            name=epi,
+            marker_color='gray',
+            opacity=0.45,
+        )
+    )
+
+    for key, label, color in [
+        ('blue_date', 'Caution', '#1f77b4'),
+        ('orange_date', 'Alert', '#ff7f0e'),
+        ('red_date', 'Severe', '#d62728'),
+    ]:
+        date_val = pd.to_datetime(summary.get(key), errors='coerce')
+        if pd.isna(date_val):
+            continue
+        fig.add_vline(
+            x=date_val,
+            line_dash='dash',
+            line_color=color,
+            opacity=0.75,
+            line_width=5,
+        )
+        fig.add_annotation(
+            x=date_val + pd.Timedelta(days=3),
+            y=max_y * 1.08,
+            text=label,
+            showarrow=False,
+            font=dict(size=14, color=color),
+            textangle=-90,
+        )
+
+    fig.update_layout(
+        height=280,
+        margin=dict(l=40, r=30, t=20, b=45),
+        plot_bgcolor='white',
+        showlegend=False,
+        hovermode='x unified',
+        xaxis=dict(
+            title='Date',
+            range=[season_data['Date'].min(), season_data['Date'].max()],
+            type='date',
+        ),
+        yaxis=dict(
+            title=epi,
+            range=[0, max_y * 1.18 if pd.notna(max_y) and max_y > 0 else 1],
+            showgrid=True,
+            gridcolor='rgba(0,0,0,0.12)',
+            fixedrange=True,
+        ),
+    )
+    return fig
+
+def render_analysis_report(result):
+    full_period_data = result["full_period_data"]
+    proc_data = result["proc_data"]
+    data_all_analysis = result["data_all_analysis"]
+    target_col = result["target_col"]
+    other_dates = result["other_dates"]
+    hockey_date = result["hockey_date"]
+    date_df_display = result["date_df_display"]
+    best_window = result["best_window"]
+    season_summary_items = result["season_summary_items"]
+    analysis_period_text = result["analysis_period_text"]
+
+    st.markdown("---")
+    st.header("Analysis Report")
+
+    st.markdown("""
+    <style>
+        .period-card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 50%;
+            margin: 14px 0 30px 0;
+        }
+        .period-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+            border: 1px solid #dbe4f0;
+            border-radius: 18px;
+            padding: 22px 22px 20px 22px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+            min-height: 220px;
+        }
+        .period-card-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #334155;
+            margin-bottom: 14px;
+            letter-spacing: 0.25px;
+        }
+        .period-card-main {
+            font-size: 30px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 18px;
+            line-height: 1.3;
+        }
+        .period-card-detail {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+        .report-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 2px 0 26px 0;
+        }
+        .report-nav a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 22px;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #1e293b;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+        }
+        .report-anchor {
+            display: block;
+            position: relative;
+            top: -84px;
+            visibility: hidden;
+        }
+        @media (max-width: 900px) {
+            .period-card-grid {
+                grid-template-columns: 1fr;
+                width: 100%;
+            }
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="period-card-grid">
+        <div class="period-card">
+            <div class="period-card-title">Uploaded Data Period</div>
+            <div class="period-card-main">{analysis_period_text}</div>
+            <div class="period-card-detail">The analysis uses the full uploaded data period shown above.</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="report-nav">
+        <a href="#overall-period-analysis">1. Overall</a>
+        <a href="#Simulation">2. Simulation</a>
+        <a href="#season-summary">3. Season Summary</a>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<span id="overall-period-analysis" class="report-anchor"></span>', unsafe_allow_html=True)
+    st.subheader("1. Overall Period Analysis")
+    fig_overall = overall_period_visualization_bootstrap(
+        full_period_data,
+        target_col,
+        other_dates,
+        hockey_date,
+        date_df_display,
+        best_window
+    )
+    st.plotly_chart(fig_overall, use_container_width=True)
+
+    st.markdown("""
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
+        <span style="font-size: 20px; color: #444; line-height: 1.6;">
+            <ul style="margin-top: 10px;">
+                <li>This plot shows all uploaded data from start to end.</li>
+                <li>You can drag on the plot to zoom in and check a specific time period.</li>
+            </ul>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+
+    st.markdown('<span id="Simulation" class="report-anchor"></span>', unsafe_allow_html=True)
+    st.subheader("2. Epidemic Warning Simulation")
+    fig1 = early_warning_visualization_bootstrap_shared_axis_experiment(
+        full_period_data, data_all_analysis, target_col, other_dates, hockey_date, date_df_display, best_window
+    )
+    st.plotly_chart(fig1, use_container_width=True)
+
+    st.markdown("""
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
+        <span style="font-size: 20px; color: #444; line-height: 1.6;">
+            <ul style="margin-top: 10px;">
+                <li>This plot shows the warning result from the full data simulation.</li>
+                <li>The right axis shows the warning probability (%).</li>
+                <li>When the probability is above 0%, 5%, and 10%, the warning level is shown as Caution, Alert, and Severe.</li>
+                <li>The lower plot uses the same Date axis and shows the warning ranges with colors.</li>
+            </ul>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+
+    st.markdown('<span id="season-summary" class="report-anchor"></span>', unsafe_allow_html=True)
+    st.subheader("3. Early Warning Timeline Summary by Season")
+    if season_summary_items:
+        season_options = {
+            f"{item['season']}-{item['season'] + 1} Season": item
+            for item in season_summary_items
+        }
+        selected_season_labels = st.multiselect(
+            "Select seasons to display",
+            options=list(season_options.keys()),
+            default=[],
+            key="season_summary_multiselect_v3",
+        )
+        selected_summary_items = [
+            season_options[label]
+            for label in selected_season_labels
+            if label in season_options
+        ]
+
+        st.markdown("""
+        <style>
+            .season-summary-title {
+                font-size: 28px;
+                font-weight: 900;
+                color: #333;
+                margin: 26px 0 12px 0;
+            }
+            .summary-card-container {
+                display: flex;
+                gap: 15px;
+                margin: 14px 0 34px 0;
+            }
+            .summary-card {
+                flex: 1;
+                background: white;
+                padding: 25px 20px;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        if not selected_summary_items:
+            st.info("Select one or more seasons to display.")
+
+        for item in selected_summary_items:
+            season = item['season']
+            st.markdown(
+                f"<div class='season-summary-title'>{season}-{season + 1} Season</div>",
+                unsafe_allow_html=True
+            )
+            fig_season = build_season_warning_plot(proc_data, season, target_col, item['summary'])
+            st.plotly_chart(fig_season, use_container_width=True)
+            st.markdown(f"""
+            <div class="summary-card-container">
+                <div class="summary-card" style="border-left: 8px solid #1f77b4;">
+                    <div style="font-size: 18px; color: #666; font-weight: 700; margin-bottom: 5px;">Caution</div>
+                    <div style="font-size: 28px; color: #1f77b4; font-weight: 800; letter-spacing: 0.5px;">{item['blue']}</div>
+                </div>
+                <div class="summary-card" style="border-left: 8px solid #ff7f0e;">
+                    <div style="font-size: 18px; color: #666; font-weight: 700; margin-bottom: 5px;">Alert</div>
+                    <div style="font-size: 28px; color: #ff7f0e; font-weight: 800; letter-spacing: 0.5px;">{item['orange']}</div>
+                </div>
+                <div class="summary-card" style="border-left: 8px solid #d62728;">
+                    <div style="font-size: 18px; color: #666; font-weight: 700; margin-bottom: 5px;">Severe</div>
+                    <div style="font-size: 28px; color: #d62728; font-weight: 800; letter-spacing: 0.5px;">{item['red']}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("No seasonal warning dates were detected by the bootstrap ensemble.")
+
+    st.markdown("""
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 5px solid #2e86c1; margin-bottom: 20px;">
+        <span style="font-size: 20px; color: #444; line-height: 1.6;">
+            <ul style="margin-top: 10px;">
+                <li>Select one or more seasons to check the result for each season.</li>
+                <li>Each season plot shows the case pattern and the first date for each warning level.</li>
+                <li>The cards below the plot show the first Caution, Alert, and Severe dates.</li>
+                <li>If no warning level is found, the date is shown as "-".</li>
+            </ul>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
 def _level_dates_from_timeline(timeline_df):
     if timeline_df is None or timeline_df.empty:
@@ -48,7 +353,8 @@ def _add_cumulative_detection_overlay(fig, timeline_df, secondary_y=True, legend
                 marker_color=color,
                 opacity=0.6,
                 width=thin_width,
-                showlegend=showlegend and (name not in legend_seen)
+                showlegend=showlegend and (name not in legend_seen),
+                hovertemplate=f"{name}: %{{y}}<extra></extra>",
             ),
             secondary_y=secondary_y,
         )
@@ -693,7 +999,8 @@ def _build_bootstrap_detection_timeline_shared_axis_experiment(
                     marker_color=color,
                     opacity=0.6,
                     width=thin_width,
-                    showlegend=(name not in legend_seen)
+                    showlegend=(name not in legend_seen),
+                    hovertemplate=f"{name}: %{{y:.1f}}%<extra></extra>",
                 ),
                 row=1,
                 col=1,
@@ -754,6 +1061,7 @@ def _build_bootstrap_detection_timeline_shared_axis_experiment(
         secondary_y=True,
         gridcolor='lightgray',
         fixedrange=True,
+        ticksuffix="%",
         row=1,
         col=1,
     )
