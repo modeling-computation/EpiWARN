@@ -6,6 +6,69 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
 import joblib
+import streamlit as st
+
+@st.cache_resource(show_spinner=False)
+def optimize_window_size(_data, epi, hockey_dates, eval_seasons, peak_start):
+    from src.preprocessing import make_raw
+
+    sample_window_list = np.arange(3, 25)
+    score_list = []
+    best_score = np.inf
+    eval_seasons = [int(season) for season in eval_seasons]
+    hockey_by_season = {
+        int(season): pd.to_datetime(date).normalize()
+        for season, date in zip(eval_seasons, hockey_dates)
+        if pd.notna(pd.to_datetime(date, errors='coerce'))
+    }
+
+    if not hockey_by_season:
+        return int(sample_window_list[0]), np.inf
+
+    for sample_window in sample_window_list:
+        df_analysis, data_all_analysis = make_raw(_data, 'analysis', sample_window, epi)
+        feature_cols = ['slope', 'mean', 'CS_mean']
+        valid_mask = df_analysis[feature_cols].notna().all(axis=1)
+        df_analysis = df_analysis.loc[valid_mask].reset_index(drop=True)
+        data_all_analysis = data_all_analysis.loc[valid_mask].reset_index(drop=True)
+
+        if df_analysis.empty or data_all_analysis.empty:
+            score = 1000
+        else:
+            try:
+                result_data_t, _, _, _ = K_means_clustering(df_analysis)
+                warning_label_t = result_data_t['label'].max()
+                seasonal_dates = extract_seasonal_detection_dates(
+                    result_data_t,
+                    data_all_analysis,
+                    warning_label=warning_label_t
+                )
+                detected_by_season = {
+                    int(season): pd.to_datetime(detect_date).normalize()
+                    for season, detect_date in seasonal_dates[['Season', 'detect_date']].itertuples(index=False)
+                }
+                compared_seasons = [
+                    season for season in eval_seasons
+                    if season in hockey_by_season and season in detected_by_season
+                ]
+                missing_count = len(hockey_by_season) - len(compared_seasons)
+
+                if not compared_seasons:
+                    score = 1000
+                else:
+                    hockey_series = pd.Series([hockey_by_season[season] for season in compared_seasons])
+                    detected_series = pd.Series([detected_by_season[season] for season in compared_seasons])
+                    diff = (hockey_series - detected_series).dt.days
+                    score = diff.abs().sum(skipna=True) + (missing_count * 1000)
+            except Exception:
+                score = 1000
+
+        if score < best_score:
+            best_score = score
+        score_list.append(score)
+
+    best_window = score_list.index(best_score) + int(sample_window_list[0])
+    return best_window, best_score
 
 def _warning_run_detection_indices(result_data, warning_label=1, min_run_length=3):
     if result_data.empty:
