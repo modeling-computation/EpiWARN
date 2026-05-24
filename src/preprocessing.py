@@ -1,8 +1,39 @@
 
 import numpy as np
 import pandas as pd
+import os
+import streamlit as st
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
+
+@st.cache_data
+def load_data(file, data_path=None):
+    if file is not None:
+        return pd.read_excel(file)
+    if data_path and os.path.exists(data_path):
+        return pd.read_excel(data_path)
+    return None
+
+def format_alert_date(date_value, fallback="Not detected"):
+    parsed = pd.to_datetime(date_value, errors='coerce')
+    if pd.isna(parsed):
+        return fallback
+    return parsed.strftime('%Y-%m-%d')
+
+def drop_warmup_detection_columns(date_df, warmup_seasons):
+    if date_df.empty or not warmup_seasons:
+        return date_df.copy()
+
+    warmup_set = {int(season) for season in warmup_seasons}
+    drop_cols = []
+    for col in date_df.columns:
+        try:
+            if int(col) in warmup_set:
+                drop_cols.append(col)
+        except (TypeError, ValueError):
+            continue
+
+    return date_df.drop(columns=drop_cols, errors='ignore')
 
 # Compute season-wise cumulative deviation from the within-season mean.
 def cumulative_sum(data, epi, season_start_week = 24):
