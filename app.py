@@ -471,23 +471,56 @@ with tab2:
                 encoded_setting_img = base64.b64encode(image_file.read()).decode()
             st.markdown(f"""
                 <div style="display: flex; justify-content: center; padding: 20px 0;">
-                    <img src="data:image/jpeg;base64,{encoded_setting_img}" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <img src="data:image/jpeg;base64,{encoded_setting_img}" style="max-width: 80%; border-radius: 8px;">
                 </div>
             """, unsafe_allow_html=True)
             
         except Exception as e:
             st.error(f"Image load error: {e}")
-            st.info("💡 'images' 폴더 안에 'Setting_guide.jpg' 파일이 있는지, 파일명 대소문자가 정확한지 확인해주세요!")
+            st.info("💡 Please check that 'Setting_guide.png' exists in the 'images' folder and that the file name matches exactly.")
 
     with st.expander("2. Dashboard Analysis", expanded=False):
+        import os
+        import base64
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        dashboard_img_1_path = os.path.join(current_dir, "images", "plot_description_1.png")
+        dashboard_img_2_path = os.path.join(current_dir, "images", "plot_description_2.png")
+
+        try:
+            with open(dashboard_img_1_path, "rb") as image_file:
+                encoded_dashboard_img_1 = base64.b64encode(image_file.read()).decode()
+            st.markdown(f"""
+                <div style="display: flex; justify-content: flex-start; padding: 20px 0 28px 0;">
+                    <img src="data:image/png;base64,{encoded_dashboard_img_1}" style="
+                        width: auto;
+                        max-width: 100%;
+                        height: auto;
+                        border-radius: 8px;
+                    ">
+                </div>
+            """, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Image 1 load error: {e}")
+            st.info("💡 Please check that 'plot_description_1.png' exists in the 'images' folder and that the file name matches exactly.")
+
         st.markdown("""
-        <div style="border: 2px dashed #ccc; border-radius: 8px; padding: 80px 20px; text-align: center; margin-bottom: 25px; margin-top: 15px; background-color: #fafafa;">
-            <span style="font-size: 26px; color: #555; font-weight: bold;">Plot 1</span><br>
-            <span style="font-size: 16px; color: #999;">(Insert your first plot code here later)</span>
-        </div>
-        
-        <div style="border: 2px dashed #ccc; border-radius: 8px; padding: 80px 20px; text-align: center; margin-bottom: 15px; background-color: #fafafa;">
-            <span style="font-size: 26px; color: #555; font-weight: bold;">Plot 2</span><br>
-            <span style="font-size: 16px; color: #999;">(Insert your second plot code here later)</span>
-        </div>
+            <div style="border-top: 1px solid #d0d7de; margin: 18px 0 22px 0;"></div>
         """, unsafe_allow_html=True)
+
+        try:
+            with open(dashboard_img_2_path, "rb") as image_file:
+                encoded_dashboard_img_2 = base64.b64encode(image_file.read()).decode()
+            st.markdown(f"""
+                <div style="display: flex; justify-content: flex-start; padding: 20px 0;">
+                    <img src="data:image/png;base64,{encoded_dashboard_img_2}" style="
+                        width: auto;
+                        max-width: 80%;
+                        height: auto;
+                        border-radius: 8px;
+                    ">
+                </div>
+            """, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Image 2 load error: {e}")
+            st.info("💡 Please check that 'plot_description_2.png' exists in the 'images' folder and that the file name matches exactly.")
