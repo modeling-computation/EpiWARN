@@ -471,7 +471,7 @@ with tab2:
                 encoded_setting_img = base64.b64encode(image_file.read()).decode()
             st.markdown(f"""
                 <div style="display: flex; justify-content: center; padding: 20px 0;">
-                    <img src="data:image/jpeg;base64,{encoded_setting_img}" style="max-width: 80%; border-radius: 8px;">
+                    <img src="data:image/jpeg;base64,{encoded_setting_img}" style="max-width: 90%; border-radius: 8px;">
                 </div>
             """, unsafe_allow_html=True)
             
@@ -515,7 +515,7 @@ with tab2:
                 <div style="display: flex; justify-content: flex-start; padding: 20px 0;">
                     <img src="data:image/png;base64,{encoded_dashboard_img_2}" style="
                         width: auto;
-                        max-width: 80%;
+                        max-width: 90%;
                         height: auto;
                         border-radius: 8px;
                     ">
